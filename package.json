@@ -1,0 +1,11 @@
+{
+  "name": "redux-getting-started",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "ex1": "babel --watch exercise1.es6 --out-file exercise1.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
