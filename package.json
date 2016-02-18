@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "ex1": "babel --watch exercise1.es6 --out-file exercise1.js"
+    "ex1": "babel --watch exercise1.es6 --out-file exercise1.js",
+    "ex2": "babel --watch exercise2.es6 --out-file exercise2.js"
   },
   "author": "",
   "license": "ISC"
