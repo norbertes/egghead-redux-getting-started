@@ -6,7 +6,7 @@
   "scripts": {
     "ex1": "babel --watch exercise1.es6 --out-file exercise1.js",
     "ex2": "babel --watch exercise2.es6 --out-file exercise2.js",
-    "ex3": "babel --watch exercise3.es6 --out-file exercise3.js",
+    "ex3": "babel --watch exercise3.es6 --out-file exercise3.js"
   },
   "author": "",
   "license": "ISC"
