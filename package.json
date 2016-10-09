@@ -9,5 +9,8 @@
     "ex3": "babel --watch exercise3.es6 --out-file exercise3.js"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "babel": "^5.8.38"
+  }
 }
