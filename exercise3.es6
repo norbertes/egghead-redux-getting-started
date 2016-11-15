@@ -1,8 +1,8 @@
 'use strict';
 
-const { createStore, combineReducers } = Redux;
+const { combineReducers } = Redux;
 const { Component } = React;
-
+const { connect } = ReactRedux;
 
 const todo = (state, action) => {
   switch (action.type) {
@@ -57,7 +57,37 @@ const todoApp = combineReducers({
   todos,
   visibilityFilter
 });
-const store = createStore(todoApp);
+
+
+/*
+  Action creators
+*/
+let nextTodoId = 0;
+const addTodo = (text) => {
+  return {
+    type: 'ADD_TODO',
+    id: nextTodoId++,
+    value: input.value,
+  };
+};
+
+const setVisibilityFilter = (filter) => {
+  return {
+    type: 'SET_VISIBILITY_FILTER',
+    filter
+  };
+};
+
+const toggleTodo = (id) => {
+  return {
+    type: 'TOGGLE_TODO',
+    id
+  };
+};
+
+/*
+  Presentational component
+*/
 
 const Link = ({
   active,
@@ -80,48 +110,42 @@ const Link = ({
   );
 };
 
-class FilterLink extends Component {
-  componentDidMount() {
-    this.unsubscribe = store.subscribe( () =>
-      this.forceUpdate()
-    );
+const mapStateToLinkProps = (state, ownProps) => {
+  return {
+    active: ownProps.filter === state.visibilityFilter
   }
-
-  componenWillUnmount() {
-    this.unsubscribe();
-  }
-
-  render() {
-    const props = this.props;
-    const state = store.getState();
-
-    return (
-      <Link
-        active={props.filter === state.visibilityFilter}
-        onClick={ () => store.dispatch({
-          type: 'SET_VISIBILITY_FILTER',
-          filter: props.filter
-        })}
-      >
-        {props.children}
-      </Link>
-    );
+};
+const mapDispatchToLinkProps = (dispatch, ownProps) => {
+  return {
+    onClick: () => {
+      dispatch(setVisibilityFilter(ownProps.filter))
+    }
   }
 }
+const FilterLink = connect(
+  mapStateToLinkProps,
+  mapDispatchToLinkProps
+)(Link);
 
-const Footer = () => (
+const Footer = ({store}) => (
   <p>
     Show:
     {' '}
-    <FilterLink filter='SHOW_ALL'>
+    <FilterLink
+      filter='SHOW_ALL'
+    >
       All
     </FilterLink>
     {', '}
-    <FilterLink filter='SHOW_ACTIVE'>
+    <FilterLink
+      filter='SHOW_ACTIVE'
+    >
       Active
     </FilterLink>
     {', '}
-    <FilterLink filter='SHOW_COMPLETED'>
+    <FilterLink
+      filter='SHOW_COMPLETED'
+    >
       Completed
     </FilterLink>
   </p>
@@ -160,9 +184,7 @@ const TodoList = ({
   </ul>
 );
 
-const AddTodo = ({
-  onAddClick
-}) => {
+let AddTodo = ({ dispatch }) => {
   let input;
 
   return (
@@ -171,7 +193,7 @@ const AddTodo = ({
         input = node;
       }} />
       <button onClick={() => {
-        onAddClick(input.value);
+        dispatch(addTodo(input.value));
         input.value = '';
       }}>
         Add Todo
@@ -179,6 +201,9 @@ const AddTodo = ({
     </div>
   );
 };
+// no state param, because component doesnt let on the state
+// no dispatch param, because if null then we're reciving dispatch method
+AddTodo = connect()(AddTodo);
 
 const getVisibleTodos = (
   todos,
@@ -198,47 +223,40 @@ const getVisibleTodos = (
   }
 }
 
-let nextTodoId = 0;
-const TodoApp = ({
-  todos,
-  visibilityFilter
-}) => (
+const mapStateToTodoListProps = (state) => {
+  return {
+    todos: getVisibleTodos(
+      state.todos,
+      state.visibilityFilter
+    )
+  }
+}
+const mapDispatchToTodoListProps = (dispatch) => {
+  return {
+    onTodoClick: (id) => {
+      dispatch(toggleTodo(id))
+    }
+  }
+}
+const VisibleTodoList = connect(
+  mapStateToTodoListProps,
+  mapDispatchToTodoListProps
+)(TodoList);
+
+const TodoApp = () => (
   <div>
-    <AddTodo
-      onAddClick={text =>
-        store.dispatch({
-          type: 'ADD_TODO',
-          id: nextTodoId++,
-          text
-        })
-      }
-    />
-    <TodoList
-      todos={
-        getVisibleTodos(
-          todos,
-          visibilityFilter
-        )
-      }
-      onTodoClick={id =>
-        store.dispatch({
-          type: 'TOGGLE_TODO',
-          id
-        })
-      }
-    />
+    <AddTodo />
+    <VisibleTodoList />
     <Footer />
   </div>
 );
 
-const render = () => {
-  ReactDOM.render(
-    <TodoApp
-      {...store.getState()}
-    />,
-    document.getElementById('root')
-  );
-};
+const { Provider } = ReactRedux;
+const { createStore } = Redux;
 
-store.subscribe(render);
-render();
+ReactDOM.render(
+  <Provider store={createStore(todoApp)}>
+    <TodoApp />
+  </Provider>,
+  document.getElementById('root')
+);
